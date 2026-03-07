@@ -42737,14 +42737,40 @@ void Draw_XMB_LINES()
 			Draw_GAMEPIC(XMB_value_line[i], GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h, YES, color);			
 		}
 		
-		if(Show_COVER) {
-			int slot;
-			if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
-				Draw_GAMEPIC(position, GAMEPIC_COVER2D, 920, 300, 10, 220, 0, NO, WHITE);
-			} else {
-				Draw_COVER(position, 920, 300, 10, 220, 0, COVER_offset, COVER, NO, WHITE);
-			}
-		}
+if(Show_COVER) {
+    int slot;
+    int game_pos = XMB_value_line[XMB_V_position[XMB_H_position]];
+
+    float cover_x = 650.0f;
+    float cover_y = 225.0f;
+    float cover_w = 150.0f;
+    float cover_h = 0.0f;
+
+    if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
+        cover_x = 650.0f;
+        cover_y = 225.0f;
+        cover_w = 150.0f;
+        cover_h = 0.0f;
+    }
+    else if(list_game_platform[game_pos] == ISO_PS2 || list_game_platform[game_pos] == JB_PS2) {
+        cover_x = 665.0f;
+        cover_y = 225.0f;
+        cover_w = 135.0f;
+        cover_h = 0.0f;
+    }
+    else if(list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1) {
+        cover_x = 620.0f;
+        cover_y = 285.0f;
+        cover_w = 170.0f;
+        cover_h = 0.0f;
+    }
+
+    if(Get_GAMEPIC_TYPE(game_pos, &slot) == GAMEPIC_COVER2D) {
+        Draw_GAMEPIC(game_pos, GAMEPIC_COVER2D, cover_x, cover_y, 10, cover_w, cover_h, NO, WHITE);
+    } else {
+        Draw_COVER(game_pos, cover_x, cover_y, 10, cover_w, cover_h, COVER_offset, COVER, NO, WHITE);
+    }
+}
 		
 		w = XMB_W * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
 		h = XMB_H * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
