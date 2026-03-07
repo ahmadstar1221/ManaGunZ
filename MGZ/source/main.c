@@ -42741,29 +42741,36 @@ if(Show_COVER) {
     int slot;
     int game_pos = XMB_value_line[XMB_V_position[XMB_H_position]];
 
-    float cover_x = 650.0f;
-    float cover_y = 225.0f;
-    float cover_w = 150.0f;
-    float cover_h = 0.0f;
+    /* Shared bottom-right anchor for all covers */
+    float anchor_right  = 810.0f;
+    float anchor_bottom = 430.0f;
+
+    float cover_w = 160.0f;
+    float cover_h = 185.0f;
 
     if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
-        cover_x = 650.0f;
-        cover_y = 225.0f;
-        cover_w = 150.0f;
-        cover_h = 0.0f;
+        /* PS3 / Blu-ray style */
+        cover_h = 185.0f;
+        cover_w = 146.0f;   /* 185 * (135 / 171.5) */
     }
     else if(list_game_platform[game_pos] == ISO_PS2 || list_game_platform[game_pos] == JB_PS2) {
-        cover_x = 665.0f;
-        cover_y = 225.0f;
-        cover_w = 135.0f;
-        cover_h = 0.0f;
+        /* PS2 / DVD keep case style */
+        cover_h = 200.0f;
+        cover_w = 142.0f;   /* 200 * (135 / 190) */
     }
     else if(list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1) {
-        cover_x = 620.0f;
-        cover_y = 285.0f;
-        cover_w = 170.0f;
-        cover_h = 0.0f;
+        /* PS1 / jewel case style */
+        cover_h = 150.0f;
+        cover_w = 170.0f;   /* 150 * (142 / 125) */
     }
+    else {
+        /* fallback */
+        cover_h = 185.0f;
+        cover_w = 146.0f;
+    }
+
+    float cover_x = anchor_right - cover_w;
+    float cover_y = anchor_bottom - cover_h;
 
     if(Get_GAMEPIC_TYPE(game_pos, &slot) == GAMEPIC_COVER2D) {
         Draw_GAMEPIC(game_pos, GAMEPIC_COVER2D, cover_x, cover_y, 10, cover_w, cover_h, NO, WHITE);
