@@ -128,7 +128,7 @@
 #define XMB_COVER_Y 210.0f
 #define XMB_COVER_Z 10.0f
 #define XMB_COVER_W 210.0f
-#define XMB_COVER_H 0.0f
+#define XMB_COVER_H 300.0f
 #define OK 			1
 #define NOK 		0
 #define YES			1
