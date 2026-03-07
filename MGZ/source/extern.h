@@ -115,3 +115,4 @@ extern char *ManaGunZ_path;
 extern int64_t prog_bar1_value;
 extern char ManaGunZ_id[10];
 extern u8 SetFilePerms(char *path);
+#endif
