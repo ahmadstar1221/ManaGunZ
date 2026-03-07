@@ -3698,49 +3698,44 @@ static void jpg_free(void *ptr,void *usrdata)
 u8 GetInfo_JPG(char *path, u32 *w, u32 *h) 
 {
 	jpgDecSource source;
-	s32 mHandle, sHandle, ret;
+	
+	memset(&source,0,sizeof(jpgDecSource));
+
+	source.stream = JPGDEC_FILE;
+	source.file_name = __get_addr32(path);
+	source.enable = JPGDEC_DISABLE;
+	
+	s32 mHandle,sHandle,ret;
+	u32 space_allocated;
 	jpgDecInfo DecInfo;
-	jpgDecOpnInfo OpnInfo;
 	jpgDecThreadInParam InThdParam;
 	jpgDecThreadOutParam OutThdParam;
 
-	memset(&source, 0, sizeof(jpgDecSource));
-	memset(&OpnInfo, 0, sizeof(jpgDecOpnInfo));
-	memset(&InThdParam, 0, sizeof(jpgDecThreadInParam));
-	memset(&OutThdParam, 0, sizeof(jpgDecThreadOutParam));
-	memset(&DecInfo, 0, sizeof(jpgDecInfo));
-
-	source.stream_sel = JPGDEC_FILE;
-	source.file_name = path;
-	source.file_offset = 0;
-	source.file_size = 0;
-	source.spu_enable = 0;
-
-	InThdParam.spu_enable = 0;
+	InThdParam.enable = 0;
 	InThdParam.ppu_prio = 512;
 	InThdParam.spu_prio = 200;
 	InThdParam.malloc_func = __get_addr32(__get_opd32(jpg_malloc));
-	InThdParam.malloc_arg = 0;
+	InThdParam.malloc_arg = 0; // no args
 	InThdParam.free_func = __get_addr32(__get_opd32(jpg_free));
-	InThdParam.free_arg = 0;
+	InThdParam.free_arg = 0; // no args
 
-	ret = jpgDecCreate(&mHandle, &InThdParam, &OutThdParam);
+	ret = jpgDecCreate(&mHandle,&InThdParam,&OutThdParam);
 
-	if(ret == 0) {
-		ret = jpgDecOpen(mHandle, &sHandle, &source, &OpnInfo);
-		if(ret == 0) {
-			ret = jpgDecReadHeader(mHandle, sHandle, &DecInfo);
-			if(ret == 0) {
+	if(ret==0) {
+		ret = jpgDecOpen(mHandle,&sHandle,&source,&space_allocated);
+		if(ret==0) {
+			ret = jpgDecReadHeader(mHandle,sHandle,&DecInfo);
+			if(ret==0) {
 				*w = DecInfo.width;
 				*h = DecInfo.height;
 			}
-			jpgDecClose(mHandle, sHandle);
+			jpgDecClose(mHandle,sHandle);
 		}
 		jpgDecDestroy(mHandle);
 	}
 	
-	if(ret == 0) return SUCCESS;
-	return FAILED;
+	if( ret==0 ) return SUCCESS;
+	else return FAILED;
 }
 
 u8 GetInfo_PNG(char * path, u32 *w, u32 *h)
@@ -10541,7 +10536,7 @@ typedef struct
 // } __attribute__((packed)) NTFS_boot_sector_t;
 
 		
-// N'OUBLIE PAS L'ENDIAN SWAP SI TU VEUX UTILISER CES DONNéES !
+// N'OUBLIE PAS L'ENDIAN SWAP SI TU VEUX UTILISER CES DONNÃ©ES !
 typedef struct
 {
 	u16 byte_per_sec;
@@ -12945,7 +12940,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	/**
 	For every region the Ripp3r application processes, the md5 hash is calculated. The next part of the
 	file contains the md5 hash for every complete region in the file. There are two exceptions for this
-	calculation. The first region starts it’s calculation at the start sector of the first file. The last regions
+	calculation. The first region starts itâ€™s calculation at the start sector of the first file. The last regions
 	ends with the end of the last file (PS3UPDAT.PUP).
 	**/
 	// I forgot to remove header and footer from region MD5... ugly fix :s
@@ -31817,7 +31812,7 @@ void open_PS2_GAME_MENU();
 
 // param=1		enable patch
 // param=0		disable patch
-// param=2		return current status​
+// param=2		return current statusâ€‹
 // return  1	enabled patch
 // return  0	disabled patch
 // return -1	its not a bc or semi bc ps3
@@ -40356,7 +40351,7 @@ void Draw_PS3PIC_3D(u8 type)
 {
 	float w=BOX3D_PS3_wc; // largeur de la jaquette de face
 	float h=BOX3D_PS3_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PS3_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS3_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w,h,e,r,-0.01,0);
@@ -40841,7 +40836,7 @@ void Draw_PS2PIC_3D(u8 type)
 {
 	float w=BOX3D_PS2_wc; // largeur de la jaquette de face
 	float h=BOX3D_PS2_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PS2_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS2_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w, h, e, r, -0.01, 0);
@@ -40863,7 +40858,7 @@ void Draw_PS2GAMECASE_3D()
 	float hb = BOX3D_PS2_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = BOX3D_PS2_l2; // distance entre le coté de la boite et la jaquette = distance entre le bas de la boite et la jaquette
+	float l2 = BOX3D_PS2_l2; // distance entre le cotÃ© de la boite et la jaquette = distance entre le bas de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 50; // distance entre le bas et l'ouverture lateral
@@ -41255,7 +41250,7 @@ void Draw_PSPPIC_3D(u8 type)
 {
 	float w=BOX3D_PSP_wc; // largeur de la jaquette de face
 	float h=BOX3D_PSP_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PSP_e+0.05; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PSP_e+0.05; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 
 	Draw_COVER3D(type,w,h,e,r,-0.01,0);
@@ -41278,7 +41273,7 @@ void Draw_PSPGAMECASE_3D()
 	float hb = BOX3D_PSP_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = BOX3D_PSP_l2; // distance entre le coté de la boite et la jaquette
+	float l2 = BOX3D_PSP_l2; // distance entre le cotÃ© de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 36; // distance entre le bas et l'ouverture lateral
@@ -41661,9 +41656,9 @@ void Draw_PSPGAMECASE_3D()
 void Draw_PS1ICON0()
 {	
 	float wb = BOX3D_PS1_wb; // largeur de la boite
-	float e=BOX3D_PS1_e+0.01; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.01; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
-	float l=wb-w; // largeur de la marge noire à gauche
+	float l=wb-w; // largeur de la marge noire Ã  gauche
 	
 	Draw_ONFRONT3D_ICON0(w, e, l);
 }
@@ -41676,12 +41671,12 @@ void Draw_PS1COVER_FRONT()
 	float hb = BOX3D_PS1_hb; // hauteur de la boite
 	
 	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
-	float e=BOX3D_PS1_e+0.2; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.2; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
-	float l=wb-r-w; // largeur de la marge noire à gauche
+	float l=wb-r-w; // largeur de la marge noire Ã  gauche
 
-// x,y,z : supérieur bas gauche
+// x,y,z : supÃ©rieur bas gauche
 	x = -wb/2;
 	y = -hb/2;
 	z = -e/2; 
@@ -41714,7 +41709,7 @@ void Draw_PS1COVER_BACK()
 	float wb = 140+0.2; // largeur de la boite
 	float hb = 130; // hauteur de la boite
 	
-	float e=BOX3D_PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 // x,y,z : superieur bas gauche
@@ -41810,7 +41805,7 @@ void Draw_PS1GAMECASE_3D()
 	
 	float w=126; // largeur de la jaquette de face 
 
-	float l=wb-r-w; // largeur de la marge noire à gauche
+	float l=wb-r-w; // largeur de la marge noire Ã  gauche
 
 	x = -wb/2;
 	y = -hb/2;
@@ -42742,14 +42737,14 @@ void Draw_XMB_LINES()
 			Draw_GAMEPIC(XMB_value_line[i], GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h, YES, color);			
 		}
 		
-	if(Show_COVER) {
-	int slot;
-	if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
-		Draw_GAMEPIC(position, GAMEPIC_COVER2D, 30, 200, 10, 130, 0, NO, WHITE);
-	} else {
-		Draw_COVER(position, 30, 200, 10, 130, 0, COVER_offset, COVER, NO, WHITE);
-	}
-}
+		if(Show_COVER) {
+			int slot;
+			if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
+				Draw_GAMEPIC(position, GAMEPIC_COVER2D, 920, 300, 10, 220, 0, NO, WHITE);
+			} else {
+				Draw_COVER(position, 920, 300, 10, 220, 0, COVER_offset, COVER, NO, WHITE);
+			}
+		}
 		
 		w = XMB_W * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
 		h = XMB_H * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
