@@ -3,7 +3,7 @@
 /*   Copyright (C) 2006 Sony Computer Entertainment Inc.    */
 /*   All Rights Reserved.                                   */
 
-#include <ppu-types.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
