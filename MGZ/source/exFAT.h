@@ -1,7 +1,13 @@
 #ifndef _EXFAT_H_
 #define _EXFAT_H_
 
-#include <ppu-types.h>
+#include <stdint.h>
+#include <stddef.h>
+
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 #include "ff.h"
 #include "fflib.h"
