@@ -124,11 +124,7 @@
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
-#define XMB_COVER_X 595.0f
-#define XMB_COVER_Y 210.0f
-#define XMB_COVER_Z 10.0f
-#define XMB_COVER_W 260.0f
-#define XMB_COVER_H 360.0f
+
 #define OK 			1
 #define NOK 		0
 #define YES			1
@@ -42746,20 +42742,14 @@ void Draw_XMB_LINES()
 			Draw_GAMEPIC(XMB_value_line[i], GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h, YES, color);			
 		}
 		
-		if(Show_COVER) {
-			int slot;
-			if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
-				Draw_GAMEPIC(position, GAMEPIC_COVER2D,
-					XMB_COVER_X, XMB_COVER_Y, XMB_COVER_Z,
-					XMB_COVER_W, XMB_COVER_H,
-					NO, WHITE);
-			} else {
-				Draw_COVER(position,
-					XMB_COVER_X, XMB_COVER_Y, XMB_COVER_Z,
-					XMB_COVER_W, XMB_COVER_H,
-					COVER_offset, COVER, NO, WHITE);
-			}
-		}
+	if(Show_COVER) {
+	int slot;
+	if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
+		Draw_GAMEPIC(position, GAMEPIC_COVER2D, 30, 200, 10, 130, 0, NO, WHITE);
+	} else {
+		Draw_COVER(position, 30, 200, 10, 130, 0, COVER_offset, COVER, NO, WHITE);
+	}
+}
 		
 		w = XMB_W * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
 		h = XMB_H * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
