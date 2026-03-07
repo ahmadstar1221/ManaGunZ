@@ -124,7 +124,11 @@
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
-
+#define XMB_COVER_X 595.0f
+#define XMB_COVER_Y 210.0f
+#define XMB_COVER_Z 10.0f
+#define XMB_COVER_W 210.0f
+#define XMB_COVER_H 0.0f
 #define OK 			1
 #define NOK 		0
 #define YES			1
@@ -3698,44 +3702,49 @@ static void jpg_free(void *ptr,void *usrdata)
 u8 GetInfo_JPG(char *path, u32 *w, u32 *h) 
 {
 	jpgDecSource source;
-	
-	memset(&source,0,sizeof(jpgDecSource));
-
-	source.stream = JPGDEC_FILE;
-	source.file_name = __get_addr32(path);
-	source.enable = JPGDEC_DISABLE;
-	
-	s32 mHandle,sHandle,ret;
-	u32 space_allocated;
+	s32 mHandle, sHandle, ret;
 	jpgDecInfo DecInfo;
+	jpgDecOpnInfo OpnInfo;
 	jpgDecThreadInParam InThdParam;
 	jpgDecThreadOutParam OutThdParam;
 
-	InThdParam.enable = 0;
+	memset(&source, 0, sizeof(jpgDecSource));
+	memset(&OpnInfo, 0, sizeof(jpgDecOpnInfo));
+	memset(&InThdParam, 0, sizeof(jpgDecThreadInParam));
+	memset(&OutThdParam, 0, sizeof(jpgDecThreadOutParam));
+	memset(&DecInfo, 0, sizeof(jpgDecInfo));
+
+	source.stream_sel = JPGDEC_FILE;
+	source.file_name = path;
+	source.file_offset = 0;
+	source.file_size = 0;
+	source.spu_enable = 0;
+
+	InThdParam.spu_enable = 0;
 	InThdParam.ppu_prio = 512;
 	InThdParam.spu_prio = 200;
 	InThdParam.malloc_func = __get_addr32(__get_opd32(jpg_malloc));
-	InThdParam.malloc_arg = 0; // no args
+	InThdParam.malloc_arg = 0;
 	InThdParam.free_func = __get_addr32(__get_opd32(jpg_free));
-	InThdParam.free_arg = 0; // no args
+	InThdParam.free_arg = 0;
 
-	ret = jpgDecCreate(&mHandle,&InThdParam,&OutThdParam);
+	ret = jpgDecCreate(&mHandle, &InThdParam, &OutThdParam);
 
-	if(ret==0) {
-		ret = jpgDecOpen(mHandle,&sHandle,&source,&space_allocated);
-		if(ret==0) {
-			ret = jpgDecReadHeader(mHandle,sHandle,&DecInfo);
-			if(ret==0) {
+	if(ret == 0) {
+		ret = jpgDecOpen(mHandle, &sHandle, &source, &OpnInfo);
+		if(ret == 0) {
+			ret = jpgDecReadHeader(mHandle, sHandle, &DecInfo);
+			if(ret == 0) {
 				*w = DecInfo.width;
 				*h = DecInfo.height;
 			}
-			jpgDecClose(mHandle,sHandle);
+			jpgDecClose(mHandle, sHandle);
 		}
 		jpgDecDestroy(mHandle);
 	}
 	
-	if( ret==0 ) return SUCCESS;
-	else return FAILED;
+	if(ret == 0) return SUCCESS;
+	return FAILED;
 }
 
 u8 GetInfo_PNG(char * path, u32 *w, u32 *h)
@@ -42740,9 +42749,15 @@ void Draw_XMB_LINES()
 		if(Show_COVER) {
 			int slot;
 			if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
-				Draw_GAMEPIC(position, GAMEPIC_COVER2D, 30, 200, 10, 130, 0, NO, WHITE);
+				Draw_GAMEPIC(position, GAMEPIC_COVER2D,
+					XMB_COVER_X, XMB_COVER_Y, XMB_COVER_Z,
+					XMB_COVER_W, XMB_COVER_H,
+					NO, WHITE);
 			} else {
-				Draw_COVER(position, 30, 200, 10, 130, 0, COVER_offset, COVER, NO, WHITE);
+				Draw_COVER(position,
+					XMB_COVER_X, XMB_COVER_Y, XMB_COVER_Z,
+					XMB_COVER_W, XMB_COVER_H,
+					COVER_offset, COVER, NO, WHITE);
 			}
 		}
 		
