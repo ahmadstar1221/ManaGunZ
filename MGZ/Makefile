@@ -17,7 +17,7 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd 
+SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd lib/libapputil/source 
 DATA		:=	data
 
 INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick lib/OpenSSL/include
@@ -56,7 +56,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
+LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a \
 			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
 			../lib/libfatfs.a ../lib/libgif.a ../lib/libtarga.a ../lib/libwebp.a \
 			../lib/libunrar.a ../lib/libun7zip.a ../lib/libuntar.a \
