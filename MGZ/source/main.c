@@ -15985,15 +15985,14 @@ void add_GAMELIST(char *path)
 {
 	u8 plat = get_platform(path);
 	
-	if( plat != BDVD       &&
-	plat != JB_PS3     &&
-	plat != JB_PS2     &&
-	plat != JB_PS1     &&
-	plat != JB_PSP     &&
-	plat != ISO_PS3    &&
-	plat != ENC_ISO_PS3 &&
-	plat != ISO_PS2    &&
-	plat != ISO_PS1    &&
+if( plat != BDVD    &&
+	plat != JB_PS3  &&
+	plat != JB_PS2  &&
+	plat != JB_PS1  &&
+	plat != JB_PSP  &&
+	plat != ISO_PS3 &&
+	plat != ISO_PS2 &&
+	plat != ISO_PS1 &&
 	plat != ISO_PSP
   ) return;
 	
@@ -16016,7 +16015,7 @@ memset(pkg_path, 0, 512);
 strcpy(title, &strrchr(path, '/')[1]);
 RemoveExtension(title);
 
-if(plat == ISO_PS3 || plat == ENC_ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
+if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
 
 	if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
 		print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
@@ -19393,7 +19392,7 @@ check:
 
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
-	if(platform == ISO_PS3 || platform == ENC_ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
+	if(platform == ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
 
 	if(GetParamSFO("TITLE_ID", game_ID, gpath) == SUCCESS)
 		return SUCCESS;
