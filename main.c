@@ -4063,7 +4063,6 @@ static u8 IsGenericInstallDiscTitle(const char *title)
 
 
 u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
-u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 {
 	char temp[512];
 	
@@ -43899,6 +43898,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
