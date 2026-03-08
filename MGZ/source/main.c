@@ -16016,18 +16016,19 @@ void add_GAMELIST(char *path)
 	if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED
 		|| strstr(title, "Install") != NULL ) {
 
-		/* fallback to PKGDIR */
-		char pkg_path[512];
-		sprintf(pkg_path, "%s/PS3_GAME/PKGDIR", list_game_path[game_number]);
+		if(plat == JB_PS3 || plat == BDVD) {
+			/* folder fallback to PKGDIR */
+			char pkg_path[512];
+			sprintf(pkg_path, "%s/PS3_GAME/PKGDIR", list_game_path[game_number]);
 
-		if(GetParamSFO("TITLE", title, pkg_path) == SUCCESS) {
-			print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
-		} else {
-			print_debug("PKGDIR TITLE not found for %s", list_game_path[game_number]);
+			if(GetParamSFO("TITLE", title, pkg_path) == SUCCESS) {
+				print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
+			} else {
+				print_debug("PKGDIR TITLE not found for %s", list_game_path[game_number]);
+			}
 		}
 	}
-}
-	list_game_title[game_number] = strcpy_malloc(title);
+}	list_game_title[game_number] = strcpy_malloc(title);
 	
 	char ID[20]={0};
 	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
