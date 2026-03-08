@@ -21811,16 +21811,22 @@ char *ISOtype(char *isoPath)
 		}
 	}
 
-	mem = LoadFileFromISO(NO, isoPath, "/PS3_GAME/PARAM.SFO", &file_size);
-	if( mem != NULL ) {
-		free(mem);
-		return _ISO_PS3;
-	}
-	mem = LoadFileFromISO(NO, isoPath, "/PSP_GAME/PARAM.SFO", &file_size);
-	if( mem != NULL ) {
-		free(mem);
-		return _ISO_PSP;
-	}
+mem = LoadFileFromISO(NO, isoPath, "/PS3_GAME/PARAM.SFO", &file_size);
+if( mem != NULL ) {
+	free(mem);
+	return _ISO_PS3;
+}
+
+/* fallback detection for some PS3 discs */
+if( ExistInISO(isoPath, "PS3_GAME") || ExistInISO(isoPath, "PS3_DISC.SFB") ) {
+	return _ISO_PS3;
+}
+
+mem = LoadFileFromISO(NO, isoPath, "/PSP_GAME/PARAM.SFO", &file_size);
+if( mem != NULL ) {
+	free(mem);
+	return _ISO_PSP;
+}
 
 	if( ExistInISO(isoPath, "AUDIO_TS") ) return _ISO_DVD_VIDEO;
 	if( ExistInISO(isoPath, "VIDEO_TS") ) return _ISO_DVD_VIDEO;
