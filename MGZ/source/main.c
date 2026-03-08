@@ -15984,7 +15984,11 @@ void sort_GAMELIST()
 void add_GAMELIST(char *path)
 {
 	u8 plat = get_platform(path);
-	
+	FILE *fp = fopen("/dev_hdd0/game/MANAGUNZ0/USRDIR/mgz_scan_log.txt", "a");
+if(fp) {
+	fprintf(fp, "SCAN path=%s plat=%d\n", path, plat);
+	fclose(fp);
+}
 if( plat != BDVD    &&
 	plat != JB_PS3  &&
 	plat != JB_PS2  &&
@@ -15994,7 +15998,14 @@ if( plat != BDVD    &&
 	plat != ISO_PS2 &&
 	plat != ISO_PS1 &&
 	plat != ISO_PSP
-  ) return;
+  ) {
+	FILE *fp = fopen("/dev_hdd0/game/MANAGUNZ0/USRDIR/mgz_scan_log.txt", "a");
+	if(fp) {
+		fprintf(fp, "SKIP path=%s plat=%d\n", path, plat);
+		fclose(fp);
+	}
+	return;
+}
 	
 	game_number++;
 	list_game_path = (char **) realloc(list_game_path, (game_number+1) * sizeof(char *));
