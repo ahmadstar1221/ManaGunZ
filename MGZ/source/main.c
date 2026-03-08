@@ -16982,33 +16982,6 @@ if(path_info(SFO_path) == _NOT_EXIST) return NULL;
 
 /* first read the normal outer title */
 GetParamSFO("TITLE", title, SFO_path);
-
-/* then fallback only if outer title is generic */
-if(title[0] && (
-    !strcmp(title, "Install Disc") ||
-    !strcmp(title, "Installer") ||
-    !strcmp(title, "Game Data") ||
-    !strcmp(title, "Application Data")
-))
-{
-    char sfo_pkgdir[1024];
-    char inner_title[256];
-
-    memset(inner_title, 0, sizeof(inner_title));
-    sprintf(sfo_pkgdir, "%s/PS3_GAME/PKGDIR/PARAM.SFO", path);
-
-    if(path_info(sfo_pkgdir) != _NOT_EXIST)
-    {
-        if(GetParamSFO("TITLE", inner_title, sfo_pkgdir) == SUCCESS)
-        {
-            if(inner_title[0])
-            {
-                strcpy(title, inner_title);
-                printf("[MGZ] PKGDIR TITLE used: %s\n", title);
-            }
-        }
-    }
-}
 		
 		sfo = fopen(SFO_path, mode);
 		if(sfo==NULL) {
