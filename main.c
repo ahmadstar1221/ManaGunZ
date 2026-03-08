@@ -4074,6 +4074,9 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 	if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
 		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+		/* fallback: install disc style games store real icon in PKGDIR */
+		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
+		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
 	if(list_game_platform[game_pos] == JB_PSP) {
 		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
@@ -43931,4 +43934,5 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
