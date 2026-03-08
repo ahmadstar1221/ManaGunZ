@@ -4060,84 +4060,7 @@ static u8 IsGenericInstallDiscTitle(const char *title)
 	if(!strcasecmp(title, "Data Disc")) return YES;
 	return NO;
 }
-static u8 GetParamSFO_FromGamePath(const char *name, char *value, char *game_path, const char *inner_sfo)
-{
-	if(game_path == NULL || inner_sfo == NULL || value == NULL) return FAILED;
-	char *ext = get_ext((char *)game_path);
-	/* ISO: read exact file from inside ISO */
-	if(!strcmp(ext, _ISO_PS3) || !strcmp(ext, _ENC_ISO_PS3) || !strcmp(ext, _ISO_PSP)) {
-		int size = 0;
-		char *mem = LoadFileFromISO(NO, (char *)game_path, (char *)inner_sfo, &size);
-		if(mem == NULL) return FAILED;
-		sfo_header header;
-		memcpy(&header, mem, sizeof(sfo_header));
-		es_header(&header);
-		if(header.magic != SFO_MAGIC) {
-			free(mem);
-			return FAILED;
-		}
-		sfo_table_entry *table_entry = (sfo_table_entry *)(mem + sizeof(sfo_header));
-		int i;
-		for(i = 0; i < header.nb_entries; i++) {
-			es_table_entry(&table_entry[i]);
-		}
-		s32 entry_id = -1;
-		for(i = 0; i < header.nb_entries; i++) {
-			char *key = mem + header.key_table_start + table_entry[i].key_offset;
-			if(!strcmp(key, name)) {
-				entry_id = i;
-				break;
-			}
-		}
-		if(entry_id == -1) {
-			free(mem);
-			return FAILED;
-		}
-		char *data = mem + header.data_table_start + table_entry[entry_id].data_offset;
-		if(table_entry[entry_id].data_type == SFO_DATA_TYPE_UTF8 ||
-		   table_entry[entry_id].data_type == SFO_DATA_TYPE_UTF8S) {
-			strncpy(value, data, table_entry[entry_id].data_max_len - 1);
-			value[table_entry[entry_id].data_max_len - 1] = 0;
-			free(mem);
-			return SUCCESS;
-		}
-		if(table_entry[entry_id].data_type == SFO_DATA_TYPE_INT32) {
-			uint32_t v = 0;
-			memcpy(&v, data, sizeof(uint32_t));
-			v = ES(v);
-			sprintf(value, "%u", v);
-			free(mem);
-			return SUCCESS;
-		}
-		free(mem);
-		return FAILED;
-	}
-	/* JB / BDVD: read explicit .SFO file directly from filesystem */
-	return GetParamSFO(name, value, (char *)inner_sfo);
-}
-static u8 LoadIcon0_FromGamePath(int game_pos, imgData *DataPic, const char *inner_png)
-{
-	if(list_game_path[game_pos] == NULL || inner_png == NULL) return FAILED;
-	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == ISO_PSP) {
-		int size = 0;
-		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], (char *)inner_png, &size);
-		if(mem == NULL) return FAILED;
-		if(pngLoadFromBuffer((const void *)mem, size, (pngData *)DataPic) == 0) {
-			free(mem);
-			return SUCCESS;
-		}
-		free(mem);
-		return FAILED;
-	}
-	else {
-		char fullpath[512];
-		snprintf(fullpath, sizeof(fullpath), "%s%s", list_game_path[game_pos], inner_png);
-		if(path_info(fullpath) == _FILE) {
-			if(imgLoadFromFile(fullpath, DataPic, NO) == SUCCESS) return SUCCESS;
-		}
-	}
-	return FAILED;
-}
+
 
 u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
@@ -43976,6 +43899,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
