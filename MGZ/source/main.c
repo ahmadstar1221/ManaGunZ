@@ -17009,7 +17009,6 @@ if(title[0] && (
         }
     }
 }
-		if(path_info(SFO_path) == _NOT_EXIST) return NULL;
 		
 		sfo = fopen(SFO_path, mode);
 		if(sfo==NULL) {
