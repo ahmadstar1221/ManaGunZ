@@ -19392,21 +19392,21 @@ check:
 
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
-	if(platform == ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
+	if(platform == ISO_PS3 || platform == _ENC_ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
 
-	if(GetParamSFO("TITLE_ID", game_ID, gpath) == SUCCESS)
+		if(GetParamSFO("TITLE_ID", game_ID, gpath) == SUCCESS)
+			return SUCCESS;
+
+		/* fallback: use filename if PARAM.SFO reading fails */
+		char *name = strrchr(gpath, '/');
+		if(name) name++;
+		else name = gpath;
+
+		strncpy(game_ID, name, 16);
+		game_ID[16] = 0;
+
 		return SUCCESS;
-
-	/* fallback: use filename if PARAM.SFO reading fails */
-	char *name = strrchr(gpath, '/');
-	if(name) name++;
-	else name = gpath;
-
-	strncpy(game_ID, name, 16);
-	game_ID[16] = 0;
-
-	return SUCCESS;
-
+	}
 } else
 	if(platform == ISO_PSP || platform == JB_PSP) {
 		return GetParamSFO("DISC_ID", game_ID, gpath);
@@ -22741,10 +22741,11 @@ u8 can_mount()
 u8 can_be_mounted(u8 platform)
 {
 	
-	if(platform == ISO_PS3
-	|| platform == ISO_PS2
-	|| platform == ISO_PS1
-	|| platform == ISO_PSP) {
+if(platform == ISO_PS3
+|| platform == _ENC_ISO_PS3
+|| platform == ISO_PS2
+|| platform == ISO_PS1
+|| platform == ISO_PSP) {
 		if(cobra) return YES;
 		if(mamba) return YES;
 		if(PEEKnPOKE) {
@@ -23376,7 +23377,7 @@ u8 MountGame(char *GamePath)
 	
 	iso = is_iso(GamePath);
 	
-	if(platform == ISO_PS3 || platform == JB_PS3) {
+	if(platform == ISO_PS3 || platform == _ENC_ISO_PS3 || platform == JB_PS3) { 
 		
 		if(GamID[0]==0) Get_ID(GamPath, platform, GamID);
 		if(GamID[0]==0) strcpy(GamID, "TEST01234\0");
