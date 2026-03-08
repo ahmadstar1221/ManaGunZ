@@ -19377,8 +19377,21 @@ check:
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
 	if(platform == ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
-		return GetParamSFO("TITLE_ID", game_ID, gpath);	
-	} else
+
+	if(GetParamSFO("TITLE_ID", game_ID, gpath) == SUCCESS)
+		return SUCCESS;
+
+	/* fallback: use filename if PARAM.SFO reading fails */
+	char *name = strrchr(gpath, '/');
+	if(name) name++;
+	else name = gpath;
+
+	strncpy(game_ID, name, 16);
+	game_ID[16] = 0;
+
+	return SUCCESS;
+
+} else
 	if(platform == ISO_PSP || platform == JB_PSP) {
 		return GetParamSFO("DISC_ID", game_ID, gpath);
 	} else
