@@ -19392,7 +19392,7 @@ check:
 
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
-	if(platform == ISO_PS3 || platform == _ENC_ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
+	if(platform == ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
 
 		if(GetParamSFO("TITLE_ID", game_ID, gpath) == SUCCESS)
 			return SUCCESS;
@@ -21779,7 +21779,7 @@ if(ExistInISO(isoPath, "PS3_GAME") || ExistInISO(isoPath, "PS3_DISC.SFB")) {
 			return _ISO_PS3;
 		}
 		
-		return _ENC_ISO_PS3;
+		return _ISO_PS3;
 	}
 	
 	if(!memcmp((char *) &mem[0x8], (char *) "PSP GAME", 0x8)) {
@@ -22742,7 +22742,6 @@ u8 can_be_mounted(u8 platform)
 {
 	
 if(platform == ISO_PS3
-|| platform == _ENC_ISO_PS3
 || platform == ISO_PS2
 || platform == ISO_PS1
 || platform == ISO_PSP) {
@@ -23377,7 +23376,7 @@ u8 MountGame(char *GamePath)
 	
 	iso = is_iso(GamePath);
 	
-	if(platform == ISO_PS3 || platform == _ENC_ISO_PS3 || platform == JB_PS3) { 
+	if(platform == ISO_PS3 || platform == JB_PS3) {
 		
 		if(GamID[0]==0) Get_ID(GamPath, platform, GamID);
 		if(GamID[0]==0) strcpy(GamID, "TEST01234\0");
