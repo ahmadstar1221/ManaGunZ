@@ -16008,28 +16008,32 @@ void add_GAMELIST(char *path)
 	list_game_platform[game_number] = plat;
 	
 	char title[512];
-	memset(title, 0, 512);
-	strcpy(title, &strrchr(path, '/')[1]);
-	RemoveExtension(title);
-	
-	if(plat == ISO_PS3 || plat == ENC_ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
+char pkg_path[512];
 
-	if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED
-		|| strstr(title, "Install") != NULL ) {
+memset(title, 0, 512);
+memset(pkg_path, 0, 512);
 
-		if(plat == JB_PS3 || plat == BDVD) {
-			/* folder fallback to PKGDIR */
-			char pkg_path[512];
-			sprintf(pkg_path, "%s/PS3_GAME/PKGDIR", list_game_path[game_number]);
+strcpy(title, &strrchr(path, '/')[1]);
+RemoveExtension(title);
 
-			if(GetParamSFO("TITLE", title, pkg_path) == SUCCESS) {
-				print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
-			} else {
-				print_debug("PKGDIR TITLE not found for %s", list_game_path[game_number]);
-			}
+if(plat == ISO_PS3 || plat == ENC_ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
+
+	if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
+		print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
+	}
+
+	/* fallback for installer discs */
+	if((plat == JB_PS3 || plat == BDVD) && strstr(title, "Install") != NULL) {
+
+		sprintf(pkg_path, "%s/PS3_GAME/PKGDIR", list_game_path[game_number]);
+
+		if(GetParamSFO("TITLE", title, pkg_path) == SUCCESS) {
+			print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
 		}
 	}
-}	list_game_title[game_number] = strcpy_malloc(title);
+}
+
+list_game_title[game_number] = strcpy_malloc(title);
 	
 	char ID[20]={0};
 	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
