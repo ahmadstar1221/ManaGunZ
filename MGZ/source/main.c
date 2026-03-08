@@ -10536,7 +10536,7 @@ typedef struct
 // } __attribute__((packed)) NTFS_boot_sector_t;
 
 		
-// N'OUBLIE PAS L'ENDIAN SWAP SI TU VEUX UTILISER CES DONNÃ©ES !
+// N'OUBLIE PAS L'ENDIAN SWAP SI TU VEUX UTILISER CES DONNÃƒÂ©ES !
 typedef struct
 {
 	u16 byte_per_sec;
@@ -12940,7 +12940,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	/**
 	For every region the Ripp3r application processes, the md5 hash is calculated. The next part of the
 	file contains the md5 hash for every complete region in the file. There are two exceptions for this
-	calculation. The first region starts itâ€™s calculation at the start sector of the first file. The last regions
+	calculation. The first region starts itÃ¢â‚¬â„¢s calculation at the start sector of the first file. The last regions
 	ends with the end of the last file (PS3UPDAT.PUP).
 	**/
 	// I forgot to remove header and footer from region MD5... ugly fix :s
@@ -16978,10 +16978,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 		char SFO_path[255];
 		
 		sprintf(SFO_path, "%s/PS3_GAME/PARAM.SFO", path);
-if(path_info(SFO_path) == _NOT_EXIST) return NULL;
-
-/* first read the normal outer title */
-GetParamSFO("TITLE", title, SFO_path);
+		if(path_info(SFO_path) == _NOT_EXIST) return NULL;
 		
 		sfo = fopen(SFO_path, mode);
 		if(sfo==NULL) {
@@ -31854,7 +31851,7 @@ void open_PS2_GAME_MENU();
 
 // param=1		enable patch
 // param=0		disable patch
-// param=2		return current statusâ€‹
+// param=2		return current statusÃ¢â‚¬â€¹
 // return  1	enabled patch
 // return  0	disabled patch
 // return -1	its not a bc or semi bc ps3
@@ -40393,7 +40390,7 @@ void Draw_PS3PIC_3D(u8 type)
 {
 	float w=BOX3D_PS3_wc; // largeur de la jaquette de face
 	float h=BOX3D_PS3_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PS3_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS3_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w,h,e,r,-0.01,0);
@@ -40878,7 +40875,7 @@ void Draw_PS2PIC_3D(u8 type)
 {
 	float w=BOX3D_PS2_wc; // largeur de la jaquette de face
 	float h=BOX3D_PS2_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PS2_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS2_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w, h, e, r, -0.01, 0);
@@ -40900,7 +40897,7 @@ void Draw_PS2GAMECASE_3D()
 	float hb = BOX3D_PS2_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = BOX3D_PS2_l2; // distance entre le cotÃ© de la boite et la jaquette = distance entre le bas de la boite et la jaquette
+	float l2 = BOX3D_PS2_l2; // distance entre le cotÃƒÂ© de la boite et la jaquette = distance entre le bas de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 50; // distance entre le bas et l'ouverture lateral
@@ -41292,7 +41289,7 @@ void Draw_PSPPIC_3D(u8 type)
 {
 	float w=BOX3D_PSP_wc; // largeur de la jaquette de face
 	float h=BOX3D_PSP_hc; // hauteur de la jaquettte de face
-	float e=BOX3D_PSP_e+0.05; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PSP_e+0.05; // ÃƒÂ©paisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 
 	Draw_COVER3D(type,w,h,e,r,-0.01,0);
@@ -41315,7 +41312,7 @@ void Draw_PSPGAMECASE_3D()
 	float hb = BOX3D_PSP_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = BOX3D_PSP_l2; // distance entre le cotÃ© de la boite et la jaquette
+	float l2 = BOX3D_PSP_l2; // distance entre le cotÃƒÂ© de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 36; // distance entre le bas et l'ouverture lateral
@@ -41698,9 +41695,9 @@ void Draw_PSPGAMECASE_3D()
 void Draw_PS1ICON0()
 {	
 	float wb = BOX3D_PS1_wb; // largeur de la boite
-	float e=BOX3D_PS1_e+0.01; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.01; // ÃƒÂ©paisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
-	float l=wb-w; // largeur de la marge noire Ã  gauche
+	float l=wb-w; // largeur de la marge noire ÃƒÂ  gauche
 	
 	Draw_ONFRONT3D_ICON0(w, e, l);
 }
@@ -41713,12 +41710,12 @@ void Draw_PS1COVER_FRONT()
 	float hb = BOX3D_PS1_hb; // hauteur de la boite
 	
 	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
-	float e=BOX3D_PS1_e+0.2; // Ã©paisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.2; // ÃƒÂ©paisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
-	float l=wb-r-w; // largeur de la marge noire Ã  gauche
+	float l=wb-r-w; // largeur de la marge noire ÃƒÂ  gauche
 
-// x,y,z : supÃ©rieur bas gauche
+// x,y,z : supÃƒÂ©rieur bas gauche
 	x = -wb/2;
 	y = -hb/2;
 	z = -e/2; 
@@ -41751,7 +41748,7 @@ void Draw_PS1COVER_BACK()
 	float wb = 140+0.2; // largeur de la boite
 	float hb = 130; // hauteur de la boite
 	
-	float e=BOX3D_PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque cotÃ© pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque cotÃƒÂ© pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 // x,y,z : superieur bas gauche
@@ -41847,7 +41844,7 @@ void Draw_PS1GAMECASE_3D()
 	
 	float w=126; // largeur de la jaquette de face 
 
-	float l=wb-r-w; // largeur de la marge noire Ã  gauche
+	float l=wb-r-w; // largeur de la marge noire ÃƒÂ  gauche
 
 	x = -wb/2;
 	y = -hb/2;
