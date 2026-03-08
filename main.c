@@ -16024,22 +16024,21 @@ void add_GAMELIST(char *path)
 			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
 		}
 
-		/* fallback: if title is generic, read real title from PS3_GAME/PKGDIR/PARAM.SFO */
-		if((plat == JB_PS3 || plat == BDVD) &&
-		   (title[0] == '\0'               ||
-		    !strcmp(title, "Install Disc") ||
-		    !strcmp(title, "Installer")    ||
-		    !strcmp(title, "Game Data")    ||
-		    !strcmp(title, "Game data")    ||
-		    !strcmp(title, "PS3 Game")))
+/* if PKGDIR/PARAM.SFO exists, always prefer it - it has the real title */
+		if(plat == JB_PS3 || plat == BDVD)
 		{
 			snprintf(pkg_sfo, sizeof(pkg_sfo), "%s/PS3_GAME/PKGDIR/PARAM.SFO",
 			         list_game_path[game_number]);
-			if(GetParamSFO("TITLE", title, pkg_sfo) == SUCCESS) {
-				print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
+			if(path_info(pkg_sfo) == _FILE)
+			{
+				char pkgdir_title[512];
+				memset(pkgdir_title, 0, sizeof(pkgdir_title));
+				if(GetParamSFO("TITLE", pkgdir_title, pkg_sfo) == SUCCESS && pkgdir_title[0] != '\0') {
+					strcpy(title, pkgdir_title);
+					print_load("PKGDIR title: %s", title);
+				}
 			}
 		}
-	}
 	list_game_title[game_number] = strcpy_malloc(title);
 	
 	char ID[20]={0};
@@ -43847,6 +43846,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
