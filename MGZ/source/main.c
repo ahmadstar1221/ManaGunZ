@@ -21740,7 +21740,11 @@ char *ISOtype(char *isoPath)
 
 	fread(mem, 1, 0x40, f);
 	
-	if(!memcmp((char *) &mem[0x28], (char *) "PS3VOLUME", 0x9)) {
+	if(!memcmp((char *) &mem[0x28], (char *) "PS3VOLif(!memcmp((char *) &mem[0x28], (char *) "PS3VOLUME", 0x9)
+ || ExistInISO(isoPath, "PS3_GAME")
+ || ExistInISO(isoPath, "PS3_DISC.SFB"))
+{UME", 0x9)) {
+	
 		FREE(mem);
 		
 		// check if it's encrypted
