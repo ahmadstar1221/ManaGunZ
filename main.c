@@ -1429,7 +1429,6 @@ u8 Show_it(int pos);
 char *LoadFile(char *path, int *file_size);
 char *LoadFileProg(char *path, int *file_size);
 u8 GetParamSFO(const char *name, char *value, char *path);
-u8 GetParamSFO_ExactFile(const char *name, char *value, const char *sfo_path);
 u8 Get_ID(char *isopath, u8 platform, char *game_ID);
 u8 is_apng(char *file);
 u8 Load_APNG(char* filename);
@@ -4071,10 +4070,10 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 		if(mem==NULL) return FAILED;
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
 	} else	
-	if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
+   if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
 		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-		/* fallback: install disc style games store real icon in PKGDIR */
+		/* fallback: use real icon from PS3_GAME/PKGDIR/ICON0.PNG */
 		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
@@ -16011,37 +16010,37 @@ void add_GAMELIST(char *path)
 	list_game_platform[game_number] = plat;
 	
 	char title[512];
-char pkg_path[512];
+	char pkg_sfo[512];
 
-memset(title, 0, 512);
-memset(pkg_path, 0, 512);
+	memset(title, 0, sizeof(title));
+	memset(pkg_sfo, 0, sizeof(pkg_sfo));
 
-strcpy(title, &strrchr(path, '/')[1]);
-RemoveExtension(title);
+	strcpy(title, &strrchr(path, '/')[1]);
+	RemoveExtension(title);
 
-if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
+	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
 
-    if(GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
-        print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
-    }
+		if(GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
+			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
+		}
 
-/* fallback for generic/missing titles: read real title from PKGDIR */
-    if((plat == JB_PS3 || plat == BDVD) &&
-       (title[0] == '\0'                  ||
-        !strcmp(title, "Install Disc")    ||
-        !strcmp(title, "Installer")       ||
-        !strcmp(title, "Game Data")       ||
-        !strcmp(title, "Game data")       ||
-        !strcmp(title, "PS3 Game")))
-    {
-        snprintf(pkg_path, sizeof(pkg_path), "%s/PS3_GAME/PKGDIR/PARAM.SFO", list_game_path[game_number]);
-
-        if(GetParamSFO_ExactFile("TITLE", title, pkg_path) == SUCCESS) {
-            print_debug("Loaded TITLE from PKGDIR SFO for %s", list_game_path[game_number]);
-        }
-    }
-}
-list_game_title[game_number] = strcpy_malloc(title);
+		/* fallback: if title is generic, read real title from PS3_GAME/PKGDIR/PARAM.SFO */
+		if((plat == JB_PS3 || plat == BDVD) &&
+		   (title[0] == '\0'               ||
+		    !strcmp(title, "Install Disc") ||
+		    !strcmp(title, "Installer")    ||
+		    !strcmp(title, "Game Data")    ||
+		    !strcmp(title, "Game data")    ||
+		    !strcmp(title, "PS3 Game")))
+		{
+			snprintf(pkg_sfo, sizeof(pkg_sfo), "%s/PS3_GAME/PKGDIR/PARAM.SFO",
+			         list_game_path[game_number]);
+			if(GetParamSFO("TITLE", title, pkg_sfo) == SUCCESS) {
+				print_debug("Loaded TITLE from PKGDIR for %s", list_game_path[game_number]);
+			}
+		}
+	}
+	list_game_title[game_number] = strcpy_malloc(title);
 	
 	char ID[20]={0};
 	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
@@ -28662,94 +28661,8 @@ u8 GetParamSFO(const char *name, char *value, char *path)
 	
 	return SUCCESS;
 }
-u8 GetParamSFO_ExactFile(const char *name, char *value, const char *sfo_path)
-{
-        FILE *sfo = NULL;
 
-        if(sfo_path == NULL) return FAILED;
-
-        sfo = fopen(sfo_path, "rb");
-        if(sfo == NULL) {
-                SetPerms((char *)sfo_path);
-                sfo = fopen(sfo_path, "rb");
-        }
-        if(sfo == NULL) {
-                print_load("GetParamSFO_ExactFile failed to open %s", sfo_path);
-                return FAILED;
-        }
-
-        sfo_header header;
-
-        fread(&header, sizeof(sfo_header), 1, sfo);
-        es_header(&header);
-
-        if(header.magic != SFO_MAGIC) {
-                fclose(sfo);
-                print_load("Error : wrong magic value in %s", sfo_path);
-                return FAILED;
-        }
-
-        sfo_table_entry table_entry[header.nb_entries];
-
-        int i;
-        for(i = 0; i < header.nb_entries; i++) {
-                fread(&table_entry[i], sizeof(sfo_table_entry), 1, sfo);
-                es_table_entry(&table_entry[i]);
-        }
-
-        char KEY[64] = {0};
-        s32 ENTRY_ID = -1;
-        u32 len = strlen(name);
-
-        for(i = 0; i < header.nb_entries; i++) {
-                fseek(sfo, header.key_table_start + table_entry[i].key_offset, SEEK_SET);
-                memset(KEY, 0, sizeof(KEY));
-                fgets(KEY, sizeof(KEY), sfo);
-                if(!strncmp(KEY, name, len)) {
-                        ENTRY_ID = i;
-                        break;
-                }
-        }
-
-        if(ENTRY_ID == -1) {
-                fclose(sfo);
-                print_debug("Failed to find %s in %s", name, sfo_path);
-                return FAILED;
-        }
-
-        fseek(sfo, header.data_table_start + table_entry[ENTRY_ID].data_offset, SEEK_SET);
-
-        if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8 ||
-           table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8S)
-        {
-                char *entry_data_utf8 = (char *) malloc(table_entry[ENTRY_ID].data_max_len);
-                if(entry_data_utf8 == NULL) {
-                        fclose(sfo);
-                        return FAILED;
-                }
-
-                fread(entry_data_utf8, 1, table_entry[ENTRY_ID].data_max_len, sfo);
-                strcpy(value, entry_data_utf8);
-                free(entry_data_utf8);
-        }
-        else if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_INT32)
-        {
-                uint32_t entry_data_int32;
-                fread(&entry_data_int32, 1, table_entry[ENTRY_ID].data_max_len, sfo);
-                entry_data_int32 = ES(entry_data_int32);
-                sprintf(value, "%d", entry_data_int32);
-        }
-        else {
-                fclose(sfo);
-                return FAILED;
-        }
-
-        fclose(sfo);
-
-        return SUCCESS;
-}
-
-
+	
 void Draw_SFO_viewer()
 
 {
@@ -43934,5 +43847,6 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
