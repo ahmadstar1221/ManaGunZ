@@ -16022,16 +16022,21 @@ if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || pla
         print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
     }
 
-    /* fallback for installer discs */
+/* fallback for generic/missing titles: read real title from PKGDIR */
     if((plat == JB_PS3 || plat == BDVD) &&
-       (!strcmp(title, "Install Disc") || !strcmp(title, "Installer")))
+       (title[0] == '\0'                  ||
+        !strcmp(title, "Install Disc")    ||
+        !strcmp(title, "Installer")       ||
+        !strcmp(title, "Game Data")       ||
+        !strcmp(title, "Game data")       ||
+        !strcmp(title, "PS3 Game")))
     {
-        sprintf(pkg_path, "%s/PS3_GAME/PKGDIR/PARAM.SFO", list_game_path[game_number]);
+        snprintf(pkg_path, sizeof(pkg_path), "%s/PS3_GAME/PKGDIR/PARAM.SFO", list_game_path[game_number]);
 
         if(GetParamSFO_ExactFile("TITLE", title, pkg_path) == SUCCESS) {
-            print_debug("Loaded TITLE from exact PKGDIR SFO for %s", list_game_path[game_number]);
+            print_debug("Loaded TITLE from PKGDIR SFO for %s", list_game_path[game_number]);
         }
-     }
+    }
 }
 list_game_title[game_number] = strcpy_malloc(title);
 	
@@ -43926,3 +43931,4 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
