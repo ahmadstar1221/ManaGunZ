@@ -16072,7 +16072,17 @@ void sort_GAMELIST()
 	}
 	
 }
+static int IsGenericInstallDiscTitle(const char *title)
+{
+    if(title == NULL) return 1;
 
+    if(!strcasecmp(title, "Install Disc")) return 1;
+    if(!strcasecmp(title, "Game Data")) return 1;
+    if(!strcasecmp(title, "Install")) return 1;
+    if(!strcasecmp(title, "Data Disc")) return 1;
+
+    return 0;
+}
 void add_GAMELIST(char *path)
 {
 	u8 plat = get_platform(path);
@@ -16108,31 +16118,39 @@ char title[512];
 	memset(sfo_pkg, 0, sizeof(sfo_pkg));
 	strcpy(title, &strrchr(path, '/')[1]);
 	RemoveExtension(title);
-	if(plat == ISO_PS3 || plat == JB_PS3 || plat == BDVD) {
-		if(plat == ISO_PS3) {
-			GetParamSFO_FromGamePath("TITLE", title, list_game_path[game_number], "/PS3_GAME/PARAM.SFO");
-		} else {
-			snprintf(sfo_main, sizeof(sfo_main), "%s/PS3_GAME/PARAM.SFO", list_game_path[game_number]);
-			GetParamSFO_FromGamePath("TITLE", title, list_game_path[game_number], sfo_main);
-		}
-		if(IsGenericInstallDiscTitle(title)) {
-			if(plat == ISO_PS3) {
-				if(GetParamSFO_FromGamePath("TITLE", title_pkg, list_game_path[game_number],
-					"/PS3_GAME/PKGDIR/PARAM.SFO") == SUCCESS && title_pkg[0] != '\0') {
-					strcpy(title, title_pkg);
-				}
-			} else {
-				snprintf(sfo_pkg, sizeof(sfo_pkg), "%s/PS3_GAME/PKGDIR/PARAM.SFO",
-				         list_game_path[game_number]);
-				if(path_info(sfo_pkg) == _FILE) {
-					if(GetParamSFO_FromGamePath("TITLE", title_pkg, list_game_path[game_number],
-						sfo_pkg) == SUCCESS && title_pkg[0] != '\0') {
-						strcpy(title, title_pkg);
-					}
-				}
-			}
-		}
-	}
+	if(plat == ISO_PS3 || plat == JB_PS3 || plat == BDVD)
+{
+    char sfo_main[512];
+    char sfo_pkg[512];
+    char title_pkg[512];
+
+    memset(sfo_main,0,sizeof(sfo_main));
+    memset(sfo_pkg,0,sizeof(sfo_pkg));
+    memset(title_pkg,0,sizeof(title_pkg));
+
+    snprintf(sfo_main,sizeof(sfo_main),"%s/PS3_GAME/PARAM.SFO", list_game_path[game_number]);
+
+    if(GetParamSFO("TITLE", title, sfo_main) == FAILED)
+    {
+        strcpy(title, &strrchr(path,'/')[1]);
+        RemoveExtension(title);
+    }
+
+    if(IsGenericInstallDiscTitle(title))
+    {
+        snprintf(sfo_pkg,sizeof(sfo_pkg),"%s/PS3_GAME/PKGDIR/PARAM.SFO", list_game_path[game_number]);
+
+        if(path_info(sfo_pkg) == _FILE)
+        {
+            if(GetParamSFO("TITLE", title_pkg, sfo_pkg) == SUCCESS)
+            {
+                if(title_pkg[0] != '\0')
+                    strcpy(title, title_pkg);
+            }
+        }
+    }
+}
+
 	else if(plat == ISO_PSP || plat == JB_PSP) {
 		if(GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
 			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
@@ -43945,6 +43963,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
