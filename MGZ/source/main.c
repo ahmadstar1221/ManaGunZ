@@ -19405,11 +19405,11 @@ u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 		strncpy(game_ID, name, 16);
 		game_ID[16] = 0;
 
-		return SUCCESS;
-	}
-} else
-	if(platform == ISO_PSP || platform == JB_PSP) {
+	return SUCCESS;
+}
+else if(platform == ISO_PSP || platform == JB_PSP) {
 		return GetParamSFO("DISC_ID", game_ID, gpath);
+		
 	} else
 	if(platform == ISO_PS2 || platform == ISO_PS1) {
 		char *mem = NULL;
