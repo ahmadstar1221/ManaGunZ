@@ -4051,7 +4051,95 @@ u8 Read_GAMEPIC_COVER2D(int game_pos, imgData *DataPic)
 	
 	return FAILED;
 }
+static u8 IsGenericInstallDiscTitle(const char *title)
+{
+	if(title == NULL || title[0] == '\0') return YES;
+	if(!strcasecmp(title, "Install Disc")) return YES;
+	if(!strcasecmp(title, "Game Data")) return YES;
+	if(!strcasecmp(title, "Install")) return YES;
+	if(!strcasecmp(title, "Data Disc")) return YES;
+	return NO;
+}
+static u8 GetParamSFO_FromGamePath(const char *name, char *value, char *game_path, const char *inner_sfo)
+{
+	if(game_path == NULL || inner_sfo == NULL || value == NULL) return FAILED;
+	char *ext = get_ext((char *)game_path);
+	/* ISO: read exact file from inside ISO */
+	if(!strcmp(ext, _ISO_PS3) || !strcmp(ext, _ENC_ISO_PS3) || !strcmp(ext, _ISO_PSP)) {
+		int size = 0;
+		char *mem = LoadFileFromISO(NO, (char *)game_path, (char *)inner_sfo, &size);
+		if(mem == NULL) return FAILED;
+		sfo_header header;
+		memcpy(&header, mem, sizeof(sfo_header));
+		es_header(&header);
+		if(header.magic != SFO_MAGIC) {
+			free(mem);
+			return FAILED;
+		}
+		sfo_table_entry *table_entry = (sfo_table_entry *)(mem + sizeof(sfo_header));
+		int i;
+		for(i = 0; i < header.nb_entries; i++) {
+			es_table_entry(&table_entry[i]);
+		}
+		s32 entry_id = -1;
+		for(i = 0; i < header.nb_entries; i++) {
+			char *key = mem + header.key_table_start + table_entry[i].key_offset;
+			if(!strcmp(key, name)) {
+				entry_id = i;
+				break;
+			}
+		}
+		if(entry_id == -1) {
+			free(mem);
+			return FAILED;
+		}
+		char *data = mem + header.data_table_start + table_entry[entry_id].data_offset;
+		if(table_entry[entry_id].data_type == SFO_DATA_TYPE_UTF8 ||
+		   table_entry[entry_id].data_type == SFO_DATA_TYPE_UTF8S) {
+			strncpy(value, data, table_entry[entry_id].data_max_len - 1);
+			value[table_entry[entry_id].data_max_len - 1] = 0;
+			free(mem);
+			return SUCCESS;
+		}
+		if(table_entry[entry_id].data_type == SFO_DATA_TYPE_INT32) {
+			uint32_t v = 0;
+			memcpy(&v, data, sizeof(uint32_t));
+			v = ES(v);
+			sprintf(value, "%u", v);
+			free(mem);
+			return SUCCESS;
+		}
+		free(mem);
+		return FAILED;
+	}
+	/* JB / BDVD: read explicit .SFO file directly from filesystem */
+	return GetParamSFO(name, value, (char *)inner_sfo);
+}
+static u8 LoadIcon0_FromGamePath(int game_pos, imgData *DataPic, const char *inner_png)
+{
+	if(list_game_path[game_pos] == NULL || inner_png == NULL) return FAILED;
+	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == ISO_PSP) {
+		int size = 0;
+		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], (char *)inner_png, &size);
+		if(mem == NULL) return FAILED;
+		if(pngLoadFromBuffer((const void *)mem, size, (pngData *)DataPic) == 0) {
+			free(mem);
+			return SUCCESS;
+		}
+		free(mem);
+		return FAILED;
+	}
+	else {
+		char fullpath[512];
+		snprintf(fullpath, sizeof(fullpath), "%s%s", list_game_path[game_pos], inner_png);
+		if(path_info(fullpath) == _FILE) {
+			if(imgLoadFromFile(fullpath, DataPic, NO) == SUCCESS) return SUCCESS;
+		}
+	}
+	return FAILED;
+}
 
+u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 {
 	char temp[512];
@@ -4059,26 +4147,24 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 	if( !(list_game_havepic[game_pos] & GAMEPIC_ICON0) ) return FAILED;
 	
 	if(list_game_platform[game_pos] == ISO_PS3) {
-		int size;
-		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PS3_GAME/ICON0.PNG", &size);
-		if(mem==NULL) return FAILED;
-		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0)  {free(mem); return SUCCESS;}
+		/* Prefer PKGDIR icon for install-disc ISOs */
+		if(LoadIcon0_FromGamePath(game_pos, DataPic, "/PS3_GAME/PKGDIR/ICON0.PNG") == SUCCESS)
+			return SUCCESS;
+		if(LoadIcon0_FromGamePath(game_pos, DataPic, "/PS3_GAME/ICON0.PNG") == SUCCESS)
+			return SUCCESS;
 	} else
 	if(list_game_platform[game_pos] == ISO_PSP) {
 		int size;
 		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PSP_GAME/ICON0.PNG", &size);
 		if(mem==NULL) return FAILED;
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
-	} else	
-  if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
-		/* Type 2 disc: if PKGDIR/ICON0.PNG exists, prefer it over the generic PS3_GAME icon */
-		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
-		if(path_info(temp) == _FILE) {
-			if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-		}
-		/* Type 1 disc: use the standard PS3_GAME icon */
-		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
-		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	} else
+	if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
+		/* Prefer PKGDIR icon for install-disc folders/discs */
+		if(LoadIcon0_FromGamePath(game_pos, DataPic, "/PS3_GAME/PKGDIR/ICON0.PNG") == SUCCESS)
+			return SUCCESS;
+		if(LoadIcon0_FromGamePath(game_pos, DataPic, "/PS3_GAME/ICON0.PNG") == SUCCESS)
+			return SUCCESS;
 	} else
 	if(list_game_platform[game_pos] == JB_PSP) {
 		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
@@ -16012,37 +16098,48 @@ void add_GAMELIST(char *path)
 	list_game_path[game_number] = strcpy_malloc(path);
 	list_game_platform[game_number] = plat;
 	
-	char title[512];
-	char pkg_sfo[512];
-
+char title[512];
+	char title_pkg[512];
+	char sfo_main[512];
+	char sfo_pkg[512];
 	memset(title, 0, sizeof(title));
-	memset(pkg_sfo, 0, sizeof(pkg_sfo));
-
+	memset(title_pkg, 0, sizeof(title_pkg));
+	memset(sfo_main, 0, sizeof(sfo_main));
+	memset(sfo_pkg, 0, sizeof(sfo_pkg));
 	strcpy(title, &strrchr(path, '/')[1]);
 	RemoveExtension(title);
-
-	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
-
-		if(GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
-			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
+	if(plat == ISO_PS3 || plat == JB_PS3 || plat == BDVD) {
+		if(plat == ISO_PS3) {
+			GetParamSFO_FromGamePath("TITLE", title, list_game_path[game_number], "/PS3_GAME/PARAM.SFO");
+		} else {
+			snprintf(sfo_main, sizeof(sfo_main), "%s/PS3_GAME/PARAM.SFO", list_game_path[game_number]);
+			GetParamSFO_FromGamePath("TITLE", title, list_game_path[game_number], sfo_main);
 		}
-
-/* Type 2 disc: if PKGDIR/PARAM.SFO exists, it has the real title */
-		if(plat == JB_PS3 || plat == BDVD)
-		{
-			snprintf(pkg_sfo, sizeof(pkg_sfo), "%s/PS3_GAME/PKGDIR/PARAM.SFO",
-			         list_game_path[game_number]);
-			if(path_info(pkg_sfo) == _FILE)
-			{
-				char pkgdir_title[512];
-				memset(pkgdir_title, 0, sizeof(pkgdir_title));
-				if(GetParamSFO("TITLE", pkgdir_title, pkg_sfo) == SUCCESS && pkgdir_title[0] != '\0')
-					strcpy(title, pkgdir_title);
+		if(IsGenericInstallDiscTitle(title)) {
+			if(plat == ISO_PS3) {
+				if(GetParamSFO_FromGamePath("TITLE", title_pkg, list_game_path[game_number],
+					"/PS3_GAME/PKGDIR/PARAM.SFO") == SUCCESS && title_pkg[0] != '\0') {
+					strcpy(title, title_pkg);
+				}
+			} else {
+				snprintf(sfo_pkg, sizeof(sfo_pkg), "%s/PS3_GAME/PKGDIR/PARAM.SFO",
+				         list_game_path[game_number]);
+				if(path_info(sfo_pkg) == _FILE) {
+					if(GetParamSFO_FromGamePath("TITLE", title_pkg, list_game_path[game_number],
+						sfo_pkg) == SUCCESS && title_pkg[0] != '\0') {
+						strcpy(title, title_pkg);
+					}
+				}
 			}
 		}
 	}
+	else if(plat == ISO_PSP || plat == JB_PSP) {
+		if(GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
+			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);
+		}
+	}
 	list_game_title[game_number] = strcpy_malloc(title);
-	
+
 	char ID[20]={0};
 	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
 		list_game_ID[game_number] = strcpy_malloc(ID);
@@ -43848,6 +43945,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
