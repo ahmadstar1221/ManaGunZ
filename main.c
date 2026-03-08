@@ -28691,91 +28691,104 @@ void open_SFO_viewer(char *path)
 }
 
 u8 GetParamSFO(const char *name, char *value, char *path)
-{	
-
+{
 	FILE* sfo=NULL;
 	u32 sfo_start=0;
 	u32 sfo_size=0;
-	
-	if(path == NULL) {
-		print_load("GetParamSFO path==NULL");
-		return FAILED;
-	}
-	
-	sfo = openSFO(path, &sfo_start, &sfo_size, "rb");
-	if(sfo==NULL) {
-		print_load("GetParamSFO Failed to open %s", path);
-		return FAILED;
-	}
-	
-	fseek(sfo, sfo_start, SEEK_SET);
-	
-	sfo_header header;
-	
-	// read header
-	fread(&header, sizeof(sfo_header), 1, sfo);
-	es_header(&header);
+	u32 key_start;
+	u32 data_start;
+	u32 key_name=0;
+	u32 data_name=0;
+	u32 maxlen_name=0;
+	u32 temp32=0;
+	u16 temp16=0;
+	int c,i;
 
-	if(header.magic != SFO_MAGIC) {
-		print_load("Error : wrong magic value");
+	char sfo_path[MAX_PATH];
+
+	sprintf(sfo_path,"%s/PS3_GAME/PARAM.SFO",path);
+
+	if(path_info(sfo_path)==_NOT_EXIST)
 		return FAILED;
-	}
-	
-	sfo_table_entry table_entry[header.nb_entries];
-	
-// read table entries
-	int i;
-	for(i=0; i < header.nb_entries; i++) {
-		fread(&table_entry[i], sizeof(sfo_table_entry), 1, sfo);
-		es_table_entry(&table_entry[i]);
+
+	sfo=MGZ_fopen(sfo_path,"rb");
+
+	if(!sfo)
+		return FAILED;
+
+	fseek(sfo,0,SEEK_END);
+	sfo_size=ftell(sfo);
+	fseek(sfo,0,SEEK_SET);
+
+	if(sfo_size<0x14)
+	{
+		MGZ_fclose(sfo);
+		return FAILED;
 	}
 
-	char KEY[64]={0};
-	s32 ENTRY_ID=-1;
-	u32 len = strlen(name);
-	
-// get KEY
-	for(i=0; i < header.nb_entries; i++) {
-		//if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S) continue ; // ignore
-		fseek(sfo, header.key_table_start + table_entry[i].key_offset + sfo_start, SEEK_SET );
-		memset(KEY, 0, 64);
-		fgets(KEY, 64, sfo);
-		if(!strncmp(KEY, name, len))  {
-			ENTRY_ID = i;
-			break;
+	fseek(sfo,8,SEEK_SET);
+	fread(&key_start,4,1,sfo);
+	fread(&data_start,4,1,sfo);
+
+	key_start=SWAP32(key_start);
+	data_start=SWAP32(data_start);
+
+	fseek(sfo,0x10,SEEK_SET);
+	fread(&temp32,4,1,sfo);
+
+	temp32=SWAP32(temp32);
+
+	for(i=0;i<(int)temp32;i++)
+	{
+		fread(&temp16,2,1,sfo);
+		key_name=SWAP16(temp16);
+
+		fread(&temp16,2,1,sfo);
+		data_name=SWAP16(temp16);
+
+		fread(&temp32,4,1,sfo);
+		maxlen_name=SWAP32(temp32);
+
+		fread(&temp32,4,1,sfo);
+		data_name=SWAP32(temp32);
+
+		fread(&temp32,4,1,sfo);
+
+		long pos=ftell(sfo);
+
+		fseek(sfo,key_start+key_name,SEEK_SET);
+
+		c=0;
+
+		while(1)
+		{
+			int ch=fgetc(sfo);
+
+			if(ch==0) break;
+
+			if(c<255)
+				value[c++]=ch;
 		}
-	}
-	
-	if(ENTRY_ID == -1) {
-		print_debug("Failed to find %s in param.sfo", name);
-		return FAILED;
-	}
-	
-	char *entry_data_utf8;
-	uint32_t entry_data_int32;
-	
-// get DATAS
-	fseek(sfo, header.data_table_start + table_entry[ENTRY_ID].data_offset + sfo_start, SEEK_SET );
-	
-	if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8 || table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8S) {
-		entry_data_utf8 = (char *) malloc(table_entry[ENTRY_ID].data_max_len);
-		if(entry_data_utf8==NULL) {
-			fclose(sfo);
-			print_debug("Error : failed to malloc entry_data_utf8");
-			return FAILED;
+
+		value[c]=0;
+
+		if(!strcmp(value,name))
+		{
+			fseek(sfo,data_start+data_name,SEEK_SET);
+
+			fread(value,maxlen_name,1,sfo);
+
+			MGZ_fclose(sfo);
+
+			return SUCCESS;
 		}
-		fread(entry_data_utf8, 1, table_entry[i].data_max_len, sfo);
-		strcpy(value, entry_data_utf8);
-		free(entry_data_utf8);
-	} else
-	if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_INT32) {
-		fread(&entry_data_int32, 1, table_entry[i].data_max_len, sfo);
-		entry_data_int32 = ES(entry_data_int32);
-		sprintf(value, "%d", entry_data_int32);
+
+		fseek(sfo,pos,SEEK_SET);
 	}
-	fclose(sfo);
-	
-	return SUCCESS;
+
+	MGZ_fclose(sfo);
+
+	return FAILED;
 }
 
 	
@@ -43963,6 +43976,7 @@ void Draw_scene()
 		Draw_MENU();	
 	}
 }
+
 
 
 
